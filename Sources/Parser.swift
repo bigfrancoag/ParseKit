@@ -16,6 +16,13 @@ public struct Parser<A> {
       return self.parse(input)
    }
 
+   public func map<B>(_ transform: @escaping (A) -> B) -> Parser<B> {
+      return Parser<B> { s in
+         let a = self.parse(s)
+         return a.map { (result: transform($0.result), remaining: $0.remaining) }
+      }
+   }
+
    public static func item() -> Parser<String> {
       return Parser<String> { s in
          if s.isEmpty {
