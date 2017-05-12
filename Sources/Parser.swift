@@ -25,15 +25,11 @@ public struct Parser<A> {
 
    public static func item() -> Parser<String> {
       return Parser<String> { s in
-         if s.isEmpty {
+         guard let (head, tail) = s.uncons() else {
             return []
          }
 
-         let tailIndex = s.index(after: s.startIndex)
-
-         let start = s.substring(to: tailIndex)
-         let end = s.substring(from: tailIndex)
-         return [(result: start, remaining: end)]
+         return [(result: head, remaining: tail)]
       }
    }
 }
