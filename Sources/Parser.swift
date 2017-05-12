@@ -2,9 +2,9 @@ import Foundation
 
 public struct Parser<A> {
    public typealias ParseResult = (result: A, remaining: String)
-   private let parse: (String) -> [(result: A, remaining: String)]
+   private let parse: (String) -> [ParseResult]
 
-   public init(_ parse: @escaping (String) -> [(result: A, remaining: String)]) {
+   public init(_ parse: @escaping (String) -> [ParseResult]) {
       self.parse = parse
    }
 
@@ -12,7 +12,7 @@ public struct Parser<A> {
       self = Parser { [(result: value, remaining: $0)] }
    }
 
-   public func runParser(on input: String) -> [(result: A, remaining: String)] {
+   public func runParser(on input: String) -> [ParseResult] {
       return self.parse(input)
    }
 
