@@ -4,7 +4,7 @@ import XCTest
 
 class StringExtensionsTests: XCTestCase {
    
-   func test_GIVEN_Empty_String_WHEN_uncons_THEN_returns_nil() {
+   func testUncons_empty() {
       let sut = ""
 
       let result = sut.uncons()
@@ -12,7 +12,7 @@ class StringExtensionsTests: XCTestCase {
       XCTAssertNil(result)
    }
    
-   func test_GIVEN_s_WHEN_uncons_THEN_returns_s_empty() {
+   func testUncons_nonempty() {
       let sut = "s"
 
       let result = sut.uncons()

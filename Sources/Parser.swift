@@ -22,14 +22,4 @@ public struct Parser<A> {
          return a.map { (result: transform($0.result), remaining: $0.remaining) }
       }
    }
-
-   public static func item() -> Parser<String> {
-      return Parser<String> { s in
-         guard let (head, tail) = s.uncons() else {
-            return []
-         }
-
-         return [(result: head, remaining: tail)]
-      }
-   }
 }
