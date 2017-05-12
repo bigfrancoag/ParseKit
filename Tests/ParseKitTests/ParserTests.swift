@@ -31,4 +31,13 @@ class ParserTests: XCTestCase {
       XCTAssertEqual(result[0].result, 15.0)
       XCTAssertEqual(result[0].remaining, "test")
    }
+
+   func testInit() {
+      let input = "test"
+      let sut = Parser<Int>()
+
+      let result = sut.runParser(on: input)
+
+      XCTAssertTrue(result.isEmpty)
+   }
 }

@@ -12,6 +12,10 @@ public struct Parser<A> {
       self = Parser { [(result: value, remaining: $0)] }
    }
 
+   public init() {
+      self = Parser { _ in [] }
+   }
+
    public func runParser(on input: String) -> [ParseResult] {
       return self.parse(input)
    }
