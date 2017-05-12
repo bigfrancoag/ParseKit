@@ -3,28 +3,6 @@ import XCTest
 @testable import ParseKit
 
 class ParserTests: XCTestCase {
-   
-   func testItem_empty() {
-      let sut = Parsers.item()
-      let input = ""
-
-      let result = sut.runParser(on: input)
-
-      XCTAssertTrue(result.isEmpty)
-   }
-   
-   func testItem_nonempty() {
-      let sut = Parsers.item()
-      let input = "test"
-
-      let result = sut.runParser(on: input)
-
-      XCTAssertFalse(result.isEmpty)
-      XCTAssertEqual(result.count, 1)
-      XCTAssertEqual(result[0].result, "t")
-      XCTAssertEqual(result[0].remaining, "est")
-   }
-   
    func testInitPure() {
       let input = "test"
       let value = 10
