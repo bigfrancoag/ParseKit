@@ -1,16 +1,16 @@
 enum Parsers {
-   public static func item() -> Parser<String> {
-      return Parser<String> { s in
+   public static func item() -> Parser<Character> {
+      return Parser { s in
          guard let (head, tail) = s.uncons() else {
             return []
          }   
 
-         return [(result: head, remaining: tail)]
+         return [(result: head.characters.first!, remaining: tail)]
       }   
    }
 
    public static func token(_ value: String) -> Parser<String> {
-      return Parser<String> { s in
+      return Parser { s in
          guard s.hasPrefix(value) else {
             return []
          }
