@@ -5,7 +5,7 @@ import XCTest
 class ParsersTests: XCTestCase {
    
    func testItem_empty() {
-      let sut = Parsers.item()
+      let sut = Parsers.item
       let input = ""
 
       let result = sut.runParser(on: input)
@@ -14,7 +14,7 @@ class ParsersTests: XCTestCase {
    }
    
    func testItem_nonempty() {
-      let sut = Parsers.item()
+      let sut = Parsers.item
       let input = "test"
 
       let result = sut.runParser(on: input)
