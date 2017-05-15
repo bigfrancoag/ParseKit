@@ -140,15 +140,15 @@ public struct Parser<A> {
       return lhs.orElse(rhs)
    }
 
-   public static prefix func .? (val: Parser<A>) -> Parser<A?> {
+   public static postfix func .? (val: Parser<A>) -> Parser<A?> {
       return val.optional()
    }
 
-   public static prefix func .* (val: Parser<A>) -> Parser<[A]> {
+   public static postfix func .* (val: Parser<A>) -> Parser<[A]> {
       return val.many()
    }
 
-   public static prefix func .+ (val: Parser<A>) -> Parser<[A]> {
+   public static postfix func .+ (val: Parser<A>) -> Parser<[A]> {
       return val.some()
    }
 }
@@ -163,9 +163,9 @@ public func ap<T, U>(_ pf: Parser<(T) -> U>, _ pt: Parser<T>) -> Parser<U> {
    }
 }
 
-prefix operator .?
-prefix operator .*
-prefix operator .+
+postfix operator .?
+postfix operator .*
+postfix operator .+
 
 infix operator •: FunctorPrecedence
 
