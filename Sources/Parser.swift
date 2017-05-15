@@ -2,7 +2,7 @@ import Foundation
 
 public struct Parser<A> {
    public typealias ParseResult = (result: A, remaining: String)
-   private let parse: (String) -> [ParseResult]
+   fileprivate let parse: (String) -> [ParseResult]
 
    public init(_ parse: @escaping (String) -> [ParseResult]) {
       self.parse = parse
@@ -28,12 +28,6 @@ public struct Parser<A> {
       return Parser<B> { s in
          let a = self.parse(s)
          return a.flatMap { return transform($0.result).parse($0.remaining) }
-      }
-   }
-
-   public static func apply<B>(_ pf: Parser<(A) -> B>, _ pa: Parser<A>) -> Parser<B> {
-      return Parser<B> { s in
-         return pf.parse(s).flatMap { (f, s1) in pa.parse(s1).map { (a, s2) in (f(a), s2) } }
       }
    }
 
@@ -113,4 +107,73 @@ public struct Parser<A> {
          return Parser<A>()
       }
    }
+
+   public static func >>= <B>(lhs: Parser<A>, rhs: @escaping (A) -> Parser<B>) -> Parser<B> {
+      return lhs.flatMap(rhs)
+   }
+
+   public static func >> <B>(lhs: Parser<A>, rhs: Parser<B>) -> Parser<B> {
+      return lhs.flatMap { _ in rhs }
+   }
+
+   public static func <*> <B>(lhs: Parser<(A) -> B>, rhs: Parser<A>) -> Parser<B> {
+      return ap(lhs, rhs)
+   }
+
+   public static func <^ <B>(lhs: A, rhs: Parser<B>) -> Parser<A> {
+      return fmap(const(lhs))(rhs)
+   }
+
+   public static func *> <B>(lhs: Parser<A>, rhs: Parser<B>) -> Parser<B> {
+      return (id <^ lhs) <*> rhs 
+   }
+
+   public static func <* <B>(lhs: Parser<A>, rhs: Parser<B>) -> Parser<A> {
+      return fmap(const)(lhs) <*> rhs
+   }
+
+   public static func <|> (lhs: Parser<A>, rhs: Parser<A>) -> Parser<A> {
+      return lhs.option(rhs)
+   }
+}
+
+func fmap<T, U>(_ f: @escaping (T) -> U) -> (Parser<T>) -> Parser<U> {
+   return { $0.map(f) }
+}
+
+func ap<T, U>(_ pf: Parser<(T) -> U>, _ pt: Parser<T>) -> Parser<U> {
+   return Parser<U> { s in
+      return pf.parse(s).flatMap { (f, s1) in pt.parse(s1).map { (t, s2) in (f(t), s2) } }
+   }
+}
+
+infix operator •: FunctorPrecedence
+
+infix operator <*>: FunctorPrecedence
+infix operator <^: FunctorPrecedence
+infix operator *>: FunctorSequencePrecedence
+infix operator <*: FunctorSequencePrecedence
+infix operator >>=: MonadPrecedence
+infix operator >>: MonadPrecedence
+
+infix operator <|>: ParserPrecedence
+
+precedencegroup FunctorPrecedence {
+   associativity: left
+   higherThan: ParserPrecedence
+}
+
+precedencegroup FunctorSequencePrecedence {
+   associativity: left
+   higherThan: FunctorPrecedence
+}
+
+precedencegroup MonadPrecedence {
+   associativity: left
+   higherThan: FunctorSequencePrecedence
+}
+
+precedencegroup ParserPrecedence {
+   associativity: left
+   higherThan: DefaultPrecedence
 }
