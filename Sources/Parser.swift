@@ -137,11 +137,11 @@ public struct Parser<A> {
    }
 }
 
-func fmap<T, U>(_ f: @escaping (T) -> U) -> (Parser<T>) -> Parser<U> {
+public func fmap<T, U>(_ f: @escaping (T) -> U) -> (Parser<T>) -> Parser<U> {
    return { $0.map(f) }
 }
 
-func ap<T, U>(_ pf: Parser<(T) -> U>, _ pt: Parser<T>) -> Parser<U> {
+public func ap<T, U>(_ pf: Parser<(T) -> U>, _ pt: Parser<T>) -> Parser<U> {
    return Parser<U> { s in
       return pf.parse(s).flatMap { (f, s1) in pt.parse(s1).map { (t, s2) in (f(t), s2) } }
    }

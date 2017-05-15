@@ -1,4 +1,4 @@
-enum Parsers {
+public enum Parsers {
    public static let item: Parser<Character> = Parser { s in
       guard let (head, tail) = s.uncons() else {
          return []
