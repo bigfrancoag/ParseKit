@@ -21,7 +21,7 @@ public struct Parser<A> {
    }
 
    public func map<B>(_ transform: @escaping (A) -> B) -> Parser<B> {
-      return self.flatMap { Parser<B>(pure: transform($0)) }
+      return self >>= { Parser<B>(pure: transform($0)) }
    }
 
    public func flatMap<B>(_ transform: @escaping (A) -> Parser<B>) -> Parser<B> {
@@ -52,7 +52,7 @@ public struct Parser<A> {
       }
    }
 
-   public func option(_ other: Parser<A>) -> Parser<A> {
+   public func orElse(_ other: Parser<A>) -> Parser<A> {
       return Parser { s in
          let a = self.parse(s)
          if a.isEmpty {
@@ -62,12 +62,16 @@ public struct Parser<A> {
       }
    }
 
+   public func optional() -> Parser<A?> {
+      return self.map({ (a: A) -> A? in return a }) <|> Parser<A?>(pure: nil)
+   }
+
    public func many() -> Parser<[A]> {
       return self.some().combine(deterministic: Parser<[A]>(pure: []))
    }
 
    public func some() -> Parser<[A]> {
-      return self.flatMap { a in self.many().flatMap { xs in Parser<[A]>(pure: [a] + xs) } }
+      return self >>= { a in self.many() >>= { xs in Parser<[A]>(pure: [a] + xs) } }
    }
 
    public func separatedBy<B>(_ separator: Parser<B>) -> Parser<[A]> {
@@ -75,15 +79,15 @@ public struct Parser<A> {
    }
 
    public func separatedBy<B>(some separator: Parser<B>) -> Parser<[A]> {
-      return self.flatMap { a in self.separatedBy(separator).flatMap({ _ in self }).many().flatMap { xs in Parser<[A]>(pure: [a] + xs) } }
+      return self >>= { a in self.separatedBy(separator).flatMap({ _ in self }).many() >>= { xs in Parser<[A]>(pure: [a] + xs) } }
    }
 
    public func token() -> Parser<A> {
-      return self.flatMap { a in Parsers.whitespace.flatMap { _ in Parser<A>(pure: a) } }
+      return self >>= { a in Parsers.whitespace >>= { _ in Parser<A>(pure: a) } }
    }
 
    public func apply(to value: String) -> [ParseResult] {
-      return Parsers.whitespace.flatMap { _ in self }.parse(value)
+      return (Parsers.whitespace >>= { _ in self }).parse(value)
    }
 
    public func chain(_ combiner: Parser<(A, A) -> A>, seed: A) -> Parser<A> {
@@ -92,15 +96,15 @@ public struct Parser<A> {
 
    public func chain(_ combiner: Parser<(A, A) -> A>) -> Parser<A> {
       func rest(_ a: A) -> Parser<A> {
-         return combiner.flatMap { f in self.flatMap { b in rest(f(a, b)) } }
+         return (combiner >>= { f in self >>= { b in rest(f(a, b)) } })
             .combine(deterministic: Parser(pure: a))
       }
 
-      return self.flatMap { rest($0) }
+      return self >>= { rest($0) }
    }
 
    public func filter(_ predicate: @escaping (A) -> Bool) -> Parser<A> {
-      return self.flatMap { a in
+      return self >>= { a in
          if predicate(a) {
             return self
          }
@@ -113,7 +117,7 @@ public struct Parser<A> {
    }
 
    public static func >> <B>(lhs: Parser<A>, rhs: Parser<B>) -> Parser<B> {
-      return lhs.flatMap { _ in rhs }
+      return lhs >>= { _ in rhs }
    }
 
    public static func <*> <B>(lhs: Parser<(A) -> B>, rhs: Parser<A>) -> Parser<B> {
@@ -133,7 +137,19 @@ public struct Parser<A> {
    }
 
    public static func <|> (lhs: Parser<A>, rhs: Parser<A>) -> Parser<A> {
-      return lhs.option(rhs)
+      return lhs.orElse(rhs)
+   }
+
+   public static prefix func .? (val: Parser<A>) -> Parser<A?> {
+      return val.optional()
+   }
+
+   public static prefix func .* (val: Parser<A>) -> Parser<[A]> {
+      return val.many()
+   }
+
+   public static prefix func .+ (val: Parser<A>) -> Parser<[A]> {
+      return val.some()
    }
 }
 
@@ -146,6 +162,10 @@ public func ap<T, U>(_ pf: Parser<(T) -> U>, _ pt: Parser<T>) -> Parser<U> {
       return pf.parse(s).flatMap { (f, s1) in pt.parse(s1).map { (t, s2) in (f(t), s2) } }
    }
 }
+
+prefix operator .?
+prefix operator .*
+prefix operator .+
 
 infix operator •: FunctorPrecedence
 
