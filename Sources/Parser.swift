@@ -120,6 +120,10 @@ public struct Parser<A> {
       return lhs >>- { _ in rhs }
    }
 
+   public static func <^> <B>(lhs: @escaping (A) -> B, rhs: Parser<A>) -> Parser<B> {
+      return fmap(lhs)(rhs)
+   }
+
    public static func <*> <B>(lhs: Parser<(A) -> B>, rhs: Parser<A>) -> Parser<B> {
       return ap(lhs, rhs)
    }
@@ -170,6 +174,7 @@ postfix operator .+
 infix operator •: FunctorPrecedence
 
 infix operator <*>: FunctorPrecedence
+infix operator <^>: FunctorPrecedence
 infix operator <^: FunctorPrecedence
 infix operator *>: FunctorSequencePrecedence
 infix operator <*: FunctorSequencePrecedence
