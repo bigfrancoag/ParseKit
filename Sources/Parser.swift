@@ -16,21 +16,24 @@ public struct Parser<A> {
       self = Parser { _ in [] }
    }
 
-   public func runParser(on input: String) -> [ParseResult] {
+   public func run(on input: String) -> [ParseResult] {
       return self.parse(input)
    }
 
    public func map<B>(_ transform: @escaping (A) -> B) -> Parser<B> {
-      return Parser<B> { s in
-         let a = self.parse(s)
-         return a.map { (result: transform($0.result), remaining: $0.remaining) }
-      }
+      return self.flatMap { Parser<B>(pure: transform($0)) }
    }
 
    public func flatMap<B>(_ transform: @escaping (A) -> Parser<B>) -> Parser<B> {
       return Parser<B> { s in
          let a = self.parse(s)
          return a.flatMap { return transform($0.result).parse($0.remaining) }
+      }
+   }
+
+   public static func apply<B>(_ pf: Parser<(A) -> B>, _ pa: Parser<A>) -> Parser<B> {
+      return Parser<B> { s in
+         return pf.parse(s).flatMap { (f, s1) in pa.parse(s1).map { (a, s2) in (f(a), s2) } }
       }
    }
 
@@ -70,11 +73,7 @@ public struct Parser<A> {
    }
 
    public func some() -> Parser<[A]> {
-      return self.flatMap { a in
-         self.many().flatMap { xs in
-            return Parser<[A]>(pure: [a] + xs)
-         }
-      }
+      return self.flatMap { a in self.many().flatMap { xs in Parser<[A]>(pure: [a] + xs) } }
    }
 
    public func separatedBy<B>(_ separator: Parser<B>) -> Parser<[A]> {
@@ -82,22 +81,36 @@ public struct Parser<A> {
    }
 
    public func separatedBy<B>(some separator: Parser<B>) -> Parser<[A]> {
-      return self.flatMap { a in
-         self.separatedBy(separator).flatMap({ _ in return self }).many().flatMap { xs in
-            return Parser<[A]>(pure: [a] + xs)
-         }
-      }
+      return self.flatMap { a in self.separatedBy(separator).flatMap({ _ in self }).many().flatMap { xs in Parser<[A]>(pure: [a] + xs) } }
    }
 
    public func token() -> Parser<A> {
-      return self.flatMap { a in
-         return Parsers.whitespace.flatMap { _ in
-            return Parser<A>(pure: a)
-         }
-      }
+      return self.flatMap { a in Parsers.whitespace.flatMap { _ in Parser<A>(pure: a) } }
    }
 
    public func apply(to value: String) -> [ParseResult] {
       return Parsers.whitespace.flatMap { _ in self }.parse(value)
+   }
+
+   public func chain(_ combiner: Parser<(A, A) -> A>, seed: A) -> Parser<A> {
+      return chain(combiner).combine(deterministic: Parser(pure: seed))
+   }
+
+   public func chain(_ combiner: Parser<(A, A) -> A>) -> Parser<A> {
+      func rest(_ a: A) -> Parser<A> {
+         return combiner.flatMap { f in self.flatMap { b in rest(f(a, b)) } }
+            .combine(deterministic: Parser(pure: a))
+      }
+
+      return self.flatMap { rest($0) }
+   }
+
+   public func filter(_ predicate: @escaping (A) -> Bool) -> Parser<A> {
+      return self.flatMap { a in
+         if predicate(a) {
+            return self
+         }
+         return Parser<A>()
+      }
    }
 }

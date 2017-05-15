@@ -22,12 +22,7 @@ enum Parsers {
    }
 
    public static func statisfy(_ predicate: @escaping (Character) -> Bool) -> Parser<Character> {
-      return item.flatMap { c in
-         if predicate(c) {
-            return Parser(pure: c)
-         }
-         return Parser()
-      }
+      return item.filter(predicate)
    }
 
    public static func regex(pattern: String) -> Parser<String> {

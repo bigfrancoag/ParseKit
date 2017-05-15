@@ -8,7 +8,7 @@ class ParserTests: XCTestCase {
       let value = 10
       let sut = Parser(pure: value)
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertFalse(result.isEmpty)
       XCTAssertEqual(result.count, 1)
@@ -24,7 +24,7 @@ class ParserTests: XCTestCase {
       let f: (Int) -> Double = { Double($0 + 5) }
       let sut = Parser(pure: value).map(f)
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertFalse(result.isEmpty)
       XCTAssertEqual(result.count, 1)
@@ -36,7 +36,7 @@ class ParserTests: XCTestCase {
       let input = "test"
       let sut = Parser<Int>()
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertTrue(result.isEmpty)
    }

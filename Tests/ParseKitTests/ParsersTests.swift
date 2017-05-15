@@ -8,7 +8,7 @@ class ParsersTests: XCTestCase {
       let sut = Parsers.item
       let input = ""
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertTrue(result.isEmpty)
    }
@@ -17,7 +17,7 @@ class ParsersTests: XCTestCase {
       let sut = Parsers.item
       let input = "test"
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertFalse(result.isEmpty)
       XCTAssertEqual(result.count, 1)
@@ -29,7 +29,7 @@ class ParsersTests: XCTestCase {
       let sut = Parsers.token("token")
       let input = ""
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertTrue(result.isEmpty)
    }
@@ -38,7 +38,7 @@ class ParsersTests: XCTestCase {
       let sut = Parsers.token("token")
       let input = "test"
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertTrue(result.isEmpty)
    }
@@ -47,7 +47,7 @@ class ParsersTests: XCTestCase {
       let sut = Parsers.token("token")
       let input = "token"
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertFalse(result.isEmpty)
       XCTAssertEqual(result.count, 1)
@@ -59,7 +59,7 @@ class ParsersTests: XCTestCase {
       let sut = Parsers.token("token")
       let input = "tokenstr"
 
-      let result = sut.runParser(on: input)
+      let result = sut.run(on: input)
 
       XCTAssertFalse(result.isEmpty)
       XCTAssertEqual(result.count, 1)
