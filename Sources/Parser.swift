@@ -21,7 +21,7 @@ public struct Parser<A> {
    }
 
    public func map<B>(_ transform: @escaping (A) -> B) -> Parser<B> {
-      return self >>= { Parser<B>(pure: transform($0)) }
+      return self >>- { Parser<B>(pure: transform($0)) }
    }
 
    public func flatMap<B>(_ transform: @escaping (A) -> Parser<B>) -> Parser<B> {
@@ -71,7 +71,7 @@ public struct Parser<A> {
    }
 
    public func some() -> Parser<[A]> {
-      return self >>= { a in self.many() >>= { xs in Parser<[A]>(pure: [a] + xs) } }
+      return self >>- { a in self.many() >>- { xs in Parser<[A]>(pure: [a] + xs) } }
    }
 
    public func separatedBy<B>(_ separator: Parser<B>) -> Parser<[A]> {
@@ -79,15 +79,15 @@ public struct Parser<A> {
    }
 
    public func separatedBy<B>(some separator: Parser<B>) -> Parser<[A]> {
-      return self >>= { a in self.separatedBy(separator).flatMap({ _ in self }).many() >>= { xs in Parser<[A]>(pure: [a] + xs) } }
+      return self >>- { a in self.separatedBy(separator).flatMap({ _ in self }).many() >>- { xs in Parser<[A]>(pure: [a] + xs) } }
    }
 
    public func token() -> Parser<A> {
-      return self >>= { a in Parsers.whitespace >>= { _ in Parser<A>(pure: a) } }
+      return self >>- { a in Parsers.whitespace >>- { _ in Parser<A>(pure: a) } }
    }
 
    public func apply(to value: String) -> [ParseResult] {
-      return (Parsers.whitespace >>= { _ in self }).parse(value)
+      return (Parsers.whitespace >>- { _ in self }).parse(value)
    }
 
    public func chain(_ combiner: Parser<(A, A) -> A>, seed: A) -> Parser<A> {
@@ -96,15 +96,15 @@ public struct Parser<A> {
 
    public func chain(_ combiner: Parser<(A, A) -> A>) -> Parser<A> {
       func rest(_ a: A) -> Parser<A> {
-         return (combiner >>= { f in self >>= { b in rest(f(a, b)) } })
+         return (combiner >>- { f in self >>- { b in rest(f(a, b)) } })
             .combine(deterministic: Parser(pure: a))
       }
 
-      return self >>= { rest($0) }
+      return self >>- { rest($0) }
    }
 
    public func filter(_ predicate: @escaping (A) -> Bool) -> Parser<A> {
-      return self >>= { a in
+      return self >>- { a in
          if predicate(a) {
             return self
          }
@@ -112,12 +112,12 @@ public struct Parser<A> {
       }
    }
 
-   public static func >>= <B>(lhs: Parser<A>, rhs: @escaping (A) -> Parser<B>) -> Parser<B> {
+   public static func >>- <B>(lhs: Parser<A>, rhs: @escaping (A) -> Parser<B>) -> Parser<B> {
       return lhs.flatMap(rhs)
    }
 
    public static func >> <B>(lhs: Parser<A>, rhs: Parser<B>) -> Parser<B> {
-      return lhs >>= { _ in rhs }
+      return lhs >>- { _ in rhs }
    }
 
    public static func <*> <B>(lhs: Parser<(A) -> B>, rhs: Parser<A>) -> Parser<B> {
@@ -173,7 +173,7 @@ infix operator <*>: FunctorPrecedence
 infix operator <^: FunctorPrecedence
 infix operator *>: FunctorSequencePrecedence
 infix operator <*: FunctorSequencePrecedence
-infix operator >>=: MonadPrecedence
+infix operator >>-: MonadPrecedence
 infix operator >>: MonadPrecedence
 
 infix operator <|>: ParserPrecedence
