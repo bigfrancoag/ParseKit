@@ -83,7 +83,7 @@ public struct Parser<A> {
    }
 
    public func token() -> Parser<A> {
-      return self >>- { a in Parsers.whitespace >>- { _ in Parser<A>(pure: a) } }
+      return self >>- { a in Parsers.whitespace.? >>- { _ in Parser<A>(pure: a) } }
    }
 
    public func apply(to value: String) -> [ParseResult] {
@@ -128,16 +128,12 @@ public struct Parser<A> {
       return ap(lhs, rhs)
    }
 
-   public static func <^ <B>(lhs: A, rhs: Parser<B>) -> Parser<A> {
-      return fmap(const(lhs))(rhs)
-   }
-
    public static func *> <B>(lhs: Parser<A>, rhs: Parser<B>) -> Parser<B> {
-      return (id <^ lhs) <*> rhs 
+      return const(id) <^> lhs <*> rhs 
    }
 
    public static func <* <B>(lhs: Parser<A>, rhs: Parser<B>) -> Parser<A> {
-      return fmap(const)(lhs) <*> rhs
+      return const <^> lhs <*> rhs
    }
 
    public static func <|> (lhs: Parser<A>, rhs: Parser<A>) -> Parser<A> {
@@ -175,7 +171,7 @@ infix operator •: FunctorPrecedence
 
 infix operator <*>: FunctorPrecedence
 infix operator <^>: FunctorPrecedence
-infix operator <^: FunctorPrecedence
+//infix operator <^: FunctorPrecedence
 infix operator *>: FunctorSequencePrecedence
 infix operator <*: FunctorSequencePrecedence
 infix operator >>-: MonadPrecedence

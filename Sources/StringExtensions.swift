@@ -1,5 +1,5 @@
-extension String {
-   func uncons() -> (head: String, tail: String)? {
+public extension String {
+   public func uncons() -> (head: String, tail: String)? {
       guard !self.isEmpty else {
          return nil
       }
