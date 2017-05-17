@@ -83,11 +83,11 @@ public struct Parser<A> {
    }
 
    public func token() -> Parser<A> {
-      return self >>- { a in Parsers.whitespace.? >>- { _ in Parser<A>(pure: a) } }
+      return Parsers.whitespace.? *> self
    }
 
    public func apply(to value: String) -> [ParseResult] {
-      return (Parsers.whitespace >>- { _ in self }).parse(value)
+      return token().parse(value)
    }
 
    public func chain(_ combiner: Parser<(A, A) -> A>, seed: A) -> Parser<A> {
