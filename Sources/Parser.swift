@@ -8,9 +8,15 @@ public struct Parser<A> {
       self.parse = parse
    }
 
-   public init(lazy getParser: @autoclosure @escaping () -> (String) -> [ParseResult]) {
+   public init(lazy parser: @autoclosure @escaping () -> Parser<A>) {
       self.parse = { s in
-         getParser()(s)
+        parser().parse(s)
+      } 
+   }
+
+   public init(lazy parser: @autoclosure @escaping () -> (String) -> [ParseResult]) {
+      self.parse = { s in
+         parser()(s)
       }
    }
 
