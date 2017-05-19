@@ -8,6 +8,12 @@ public struct Parser<A> {
       self.parse = parse
    }
 
+   public init(lazy getParser: @autoclosure @escaping () -> (String) -> [ParseResult]) {
+      self.parse = { s in
+         getParser()(s)
+      }
+   }
+
    public init(pure value: A) {
       self = Parser { [(result: value, remaining: $0)] }
    }
