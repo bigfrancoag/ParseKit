@@ -87,11 +87,13 @@ public struct Parser<A> {
    }
 
    public func separatedBy<B>(_ separator: Parser<B>) -> Parser<[A]> {
-      return self.separatedBy(some: separator).combine(deterministic: Parser<[A]>(pure: []))
+      //return self.separatedBy(some: separator).combine(deterministic: Parser<[A]>(pure: []))
+      return self.separatedBy(some: separator).orElse(Parser<[A]>(pure: []))
    }
 
    public func separatedBy<B>(some separator: Parser<B>) -> Parser<[A]> {
-      return self >>- { a in self.separatedBy(separator).flatMap({ _ in self }).many() >>- { xs in Parser<[A]>(pure: [a] + xs) } }
+      return self >>- { a in (separator *> self).many() >>- { xs in Parser<[A]>(pure: [a] + xs) } }
+      //return self >>- { a in self.separatedBy(separator).flatMap({ _ in self }).many() >>- { xs in Parser<[A]>(pure: [a] + xs) } }
    }
 
    public func token() -> Parser<A> {
