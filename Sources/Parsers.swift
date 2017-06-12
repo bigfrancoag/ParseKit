@@ -36,7 +36,7 @@ public enum Parsers {
       }
    }
 
-   public static let whitespace: Parser<String> = regex(pattern: "\\s*")
+   public static let whitespace: Parser<String> = regex(pattern: "\\s*") <|> token("\r\n") <|> token("\n") <|> token("\r")
 
    public static func symbolicToken(_ value: String) -> Parser<String> {
       return token(value).token()
